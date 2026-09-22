@@ -4,7 +4,7 @@
 
 >>> QUICK 1-STEP INSTALL (COPY & PASTE THIS COMMAND):
 ------------------------------------------------------------
-git clone https://github.com/shrawankhambekar/ScreenshotTool.git CapturePi && cd CapturePi && ./install.sh
+git clone https://github.com/shrawankhambekar/CapturePi.git CapturePi && cd CapturePi && ./install.sh
 ------------------------------------------------------------
 
 Or if using a downloaded ZIP archive:

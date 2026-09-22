@@ -6,11 +6,11 @@
 
 **The ultimate lightweight, hardware-accelerated screen capture and recording suite for Raspberry Pi and Wayland Linux.**
 
-[![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi%20OS%20%7C%20Debian%20%7C%20Arch%20%7C%20Fedora-c51a4a.svg?logo=raspberrypi&logoColor=white)](https://github.com/shrawankhambekar/ScreenshotTool)
-[![Display Server](https://img.shields.io/badge/Wayland-Labwc%20%7C%20Sway%20%7C%20Hyprland-blue.svg?logo=wayland&logoColor=white)](https://github.com/shrawankhambekar/ScreenshotTool)
-[![Toolkit](https://img.shields.io/badge/GUI-GTK4%20Layer%20Shell%20%2B%20Cairo-ff69b4.svg?logo=gtk&logoColor=white)](https://github.com/shrawankhambekar/ScreenshotTool)
-[![Recorder](https://img.shields.io/badge/Engine-wf--recorder%20%2B%20grim-brightgreen.svg)](https://github.com/shrawankhambekar/ScreenshotTool)
-[![Audio](https://img.shields.io/badge/Audio-PipeWire%20%7C%20WirePlumber-orange.svg)](https://github.com/shrawankhambekar/ScreenshotTool)
+[![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi%20OS%20%7C%20Debian%20%7C%20Arch%20%7C%20Fedora-c51a4a.svg?logo=raspberrypi&logoColor=white)](https://github.com/shrawankhambekar/CapturePi)
+[![Display Server](https://img.shields.io/badge/Wayland-Labwc%20%7C%20Sway%20%7C%20Hyprland-blue.svg?logo=wayland&logoColor=white)](https://github.com/shrawankhambekar/CapturePi)
+[![Toolkit](https://img.shields.io/badge/GUI-GTK4%20Layer%20Shell%20%2B%20Cairo-ff69b4.svg?logo=gtk&logoColor=white)](https://github.com/shrawankhambekar/CapturePi)
+[![Recorder](https://img.shields.io/badge/Engine-wf--recorder%20%2B%20grim-brightgreen.svg)](https://github.com/shrawankhambekar/CapturePi)
+[![Audio](https://img.shields.io/badge/Audio-PipeWire%20%7C%20WirePlumber-orange.svg)](https://github.com/shrawankhambekar/CapturePi)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 *A fast, modern alternative to bulky screenshot tools. Built with native GTK4 Layer Shell and Cairo for zero-lag screen cropping, 1-click full screen snapping, fluid dragging, and high-framerate MP4 video recording with dual audio (Mic + System Sound).*
@@ -59,7 +59,7 @@ Most screenshot and screen recording tools for Linux are either built for legacy
 
 Clone the repository and run the installer:
 ```bash
-git clone https://github.com/shrawankhambekar/ScreenshotTool.git CapturePi
+git clone https://github.com/shrawankhambekar/CapturePi.git CapturePi
 cd CapturePi
 ./install.sh
 ```
