@@ -132,6 +132,13 @@ To cleanly remove all shortcuts, desktop icons, and keybindings:
 
 ---
 
+## 🔍 Search & Index Keywords
+
+`raspberry pi screenshot` • `pi snapshot` • `pi capture` • `raspberry pi screen recorder` • `rpi snipping tool` • `labwc screenshot tool` • `wayland screen capture` • `pi screen record with audio` • `raspberry pi 5 screen recorder` • `raspberry pi 4 snapshot`
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
