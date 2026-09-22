@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# State files
+.last_mode
+
+# Archives
+*.zip
+*.tar.gz
+
+# Environment / local
+.env
+.venv
+env/
+venv/

@@ -1,0 +1,154 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+STATE_FILE="$PROJECT_DIR/.last_mode"
+WOFI_CONFIG="$PROJECT_DIR/config/wofi/config"
+WOFI_STYLE="$PROJECT_DIR/config/wofi/style.css"
+
+# -------------------------------------------------
+# Load last selected mode
+# -------------------------------------------------
+
+if [ -f "$STATE_FILE" ]; then
+    LAST_MODE=$(cat "$STATE_FILE")
+else
+    LAST_MODE="Rectangle"
+fi
+
+# -------------------------------------------------
+# Build horizontal toolbar
+# -------------------------------------------------
+
+case "$LAST_MODE" in
+
+    "Rectangle")
+        OPTIONS="✓ Rectangle
+Full Screen
+Record"
+        ;;
+
+    "Full Screen")
+        OPTIONS="Rectangle
+✓ Full Screen
+Record"
+        ;;
+
+    "Record")
+        OPTIONS="Rectangle
+Full Screen
+✓ Record"
+        ;;
+
+    *)
+        LAST_MODE="Rectangle"
+        OPTIONS="✓ Rectangle
+Full Screen
+Record"
+        ;;
+
+esac
+
+# -------------------------------------------------
+# Show toolbar
+# -------------------------------------------------
+
+CHOICE=$(printf "%s\n" "$OPTIONS" | wofi \
+    --dmenu \
+    --conf "$WOFI_CONFIG" \
+    --style "$WOFI_STYLE" \
+    --location top \
+    --width 620px \
+    --height 70px \
+    --columns 3 \
+    --hide-search \
+    --single-click \
+    --define close_on_focus_loss=true \
+    --define layer=overlay)
+
+# Remove check mark
+CLEAN_CHOICE=$(echo "$CHOICE" | sed 's/^✓ //')
+
+# -------------------------------------------------
+# If user clicked inside toolbar:
+# change mode, then immediately enter capture mode
+# -------------------------------------------------
+
+if [ -n "$CLEAN_CHOICE" ]; then
+    LAST_MODE="$CLEAN_CHOICE"
+    echo "$LAST_MODE" > "$STATE_FILE"
+fi
+
+# -------------------------------------------------
+# Capture settings
+# White translucent overlay
+# -------------------------------------------------
+
+OVERLAY="#ffffff55"
+BORDER="#ffffffee"
+CLEAR="#ffffff00"
+
+# -------------------------------------------------
+# RECTANGLE MODE
+# -------------------------------------------------
+
+if [ "$LAST_MODE" = "Rectangle" ]; then
+
+    GEOMETRY=$(slurp \
+        -b "$OVERLAY" \
+        -c "$BORDER" \
+        -s "$CLEAR" \
+        -w 2) || exit 0
+
+    grim -g "$GEOMETRY" - | \
+        wl-copy --type image/png
+
+    exit 0
+fi
+
+# -------------------------------------------------
+# FULL SCREEN MODE
+# -------------------------------------------------
+
+if [ "$LAST_MODE" = "Full Screen" ]; then
+
+    # White translucent overlay.
+    # Any mouse button finishes point selection.
+    # We use RIGHT CLICK as the trigger.
+    POINT=$(slurp \
+        -p \
+        -b "$OVERLAY" \
+        -c "$BORDER" \
+        -s "$CLEAR" \
+        -w 2) || exit 0
+
+    grim - | \
+        wl-copy --type image/png --paste-once
+
+    exit 0
+fi
+
+# -------------------------------------------------
+# RECORD MODE
+# -------------------------------------------------
+
+if [ "$LAST_MODE" = "Record" ]; then
+
+    GEOMETRY=$(slurp \
+        -b "$OVERLAY" \
+        -c "$BORDER" \
+        -s "$CLEAR" \
+        -w 2 2>/dev/null || true)
+
+    RECORDER_SCRIPT="$PROJECT_DIR/scripts/screen-recorder"
+
+    if [ -n "$GEOMETRY" ]; then
+        exec "$RECORDER_SCRIPT" -g "$GEOMETRY"
+    else
+        exec "$RECORDER_SCRIPT"
+    fi
+
+    exit 0
+fi
+

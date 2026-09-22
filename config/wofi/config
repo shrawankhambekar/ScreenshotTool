@@ -1,0 +1,15 @@
+width=620
+height=70
+
+location=top
+
+orientation=horizontal
+columns=3
+
+hide_search=true
+single_click=true
+close_on_focus_loss=true
+
+layer=overlay
+
+dynamic_lines=true

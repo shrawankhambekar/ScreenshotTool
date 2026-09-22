@@ -1,0 +1,41 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+OVERLAY_PY="$PROJECT_DIR/overlay/screenshot_overlay.py"
+RECORDER_PY="$PROJECT_DIR/overlay/recording_controller.py"
+
+# If a screen recording is currently active, pressing Print Screen stops and saves the recording!
+if pgrep -f "$RECORDER_PY" >/dev/null; then
+    pkill -INT -f "$RECORDER_PY"
+    exit 0
+fi
+
+# If the overlay is already open, ignore this press.
+if pgrep -f "$OVERLAY_PY" >/dev/null; then
+    exit 0
+fi
+
+# Dynamically locate libgtk4-layer-shell for python-gi across architectures
+if [ -z "$LD_PRELOAD" ] || [[ "$LD_PRELOAD" != *"libgtk4-layer-shell"* ]]; then
+    ARCH="$(uname -m)"
+    for candidate in \
+        "/usr/lib/${ARCH}-linux-gnu/libgtk4-layer-shell.so.0" \
+        "/lib/${ARCH}-linux-gnu/libgtk4-layer-shell.so.0" \
+        "/usr/lib64/libgtk4-layer-shell.so.0" \
+        "/usr/lib/libgtk4-layer-shell.so.0" \
+        "/usr/local/lib/libgtk4-layer-shell.so.0"; do
+        if [ -f "$candidate" ]; then
+            export LD_PRELOAD="$candidate${LD_PRELOAD:+:$LD_PRELOAD}"
+            break
+        fi
+    done
+    if [ -z "$LD_PRELOAD" ]; then
+        FALLBACK_LIB=$(find /usr/lib /lib /usr/local/lib -name "libgtk4-layer-shell.so*" 2>/dev/null | head -n 1)
+        if [ -n "$FALLBACK_LIB" ]; then
+            export LD_PRELOAD="$FALLBACK_LIB"
+        fi
+    fi
+fi
+
+exec python3 "$OVERLAY_PY"

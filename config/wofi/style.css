@@ -1,0 +1,36 @@
+window {
+    background-color: rgba(30, 30, 30, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+}
+
+#outer-box {
+    padding: 6px;
+}
+
+#input {
+    display: none;
+}
+
+#scroll {
+    margin: 0;
+}
+
+#inner-box {
+    spacing: 4px;
+}
+
+#entry {
+    padding: 12px 24px;
+    margin: 2px;
+    border-radius: 8px;
+}
+
+#entry:selected {
+    background-color: rgba(80, 140, 255, 0.9);
+}
+
+#text {
+    font-size: 15px;
+    font-weight: 500;
+}
