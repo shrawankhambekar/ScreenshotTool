@@ -128,14 +128,18 @@ echo "  -> Created ~/.local/bin/capturepi, capturepi-menu, and capturepi-recorde
 
 # Install Icon
 ICON_DIR="$REAL_HOME/.local/share/icons/hicolor/256x256/apps"
-mkdir -p "$ICON_DIR"
+SCALABLE_DIR="$REAL_HOME/.local/share/icons/hicolor/scalable/apps"
+PIXMAPS_DIR="$REAL_HOME/.local/share/pixmaps"
+mkdir -p "$ICON_DIR" "$SCALABLE_DIR" "$PIXMAPS_DIR"
 if [ -f "$INSTALL_DIR/assets/icon.png" ]; then
     cp "$INSTALL_DIR/assets/icon.png" "$ICON_DIR/capturepi.png"
-    chown "$REAL_USER":"$REAL_USER" "$ICON_DIR/capturepi.png" 2>/dev/null || true
+    cp "$INSTALL_DIR/assets/icon.png" "$SCALABLE_DIR/capturepi.png"
+    cp "$INSTALL_DIR/assets/icon.png" "$PIXMAPS_DIR/capturepi.png"
+    chown "$REAL_USER":"$REAL_USER" "$ICON_DIR/capturepi.png" "$SCALABLE_DIR/capturepi.png" "$PIXMAPS_DIR/capturepi.png" 2>/dev/null || true
     if command -v gtk-update-icon-cache >/dev/null 2>&1; then
         gtk-update-icon-cache -f -t "$REAL_HOME/.local/share/icons/hicolor" 2>/dev/null || true
     fi
-    echo "  -> Installed CapturePi icon to ~/.local/share/icons/hicolor/256x256/apps/capturepi.png"
+    echo "  -> Installed CapturePi icon to ~/.local/share/icons/ and ~/.local/share/pixmaps/"
 fi
 
 # Install Desktop Entry
