@@ -2,10 +2,7 @@
 
 <img src="assets/banner.png" alt="CapturePi Banner" width="100%" />
 
-<br/><br/>
-<img src="assets/icon.png" alt="CapturePi Logo" width="120" />
-
-# CapturePi
+<br/>
 
 **The ultimate lightweight, hardware-accelerated screen capture and recording suite for Raspberry Pi and Wayland Linux.**
 
