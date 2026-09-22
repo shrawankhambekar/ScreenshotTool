@@ -6,14 +6,22 @@ REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 REAL_HOME="${REAL_HOME:-$HOME}"
 
 echo "=========================================="
-echo "    Uninstalling Wayland Screenshot Tool   "
+echo "         Uninstalling CapturePi           "
 echo "=========================================="
 
-# Remove symlinks and desktop entry
+# Remove symlinks and desktop entries
+rm -f "$REAL_HOME/.local/bin/capturepi"
+rm -f "$REAL_HOME/.local/bin/capturepi-menu"
+rm -f "$REAL_HOME/.local/bin/capturepi-recorder"
 rm -f "$REAL_HOME/.local/bin/screenshot-tool"
 rm -f "$REAL_HOME/.local/bin/screenshot-menu"
+rm -f "$REAL_HOME/.local/bin/screen-recorder"
+
+rm -f "$REAL_HOME/.local/share/applications/CapturePi.desktop"
 rm -f "$REAL_HOME/.local/share/applications/screenshot-tool.desktop"
-echo "Removed launcher shortcuts."
+rm -f "$REAL_HOME/.local/share/icons/hicolor/256x256/apps/capturepi.png"
+
+echo "Removed launcher shortcuts and icons."
 
 # Remove keybind from labwc if present
 LABWC_RC="$REAL_HOME/.config/labwc/rc.xml"
@@ -32,14 +40,18 @@ try:
         for kb in kb_elem.findall("keybind"):
             if kb.get("key") == "Print":
                 cmd = kb.find(".//command")
-                if cmd is not None and "screenshot-overlay" in (cmd.text or ""):
+                if cmd is not None and any(k in (cmd.text or "") for k in ["capturepi", "screenshot-overlay"]):
+                    to_remove.append(kb)
+            elif kb.get("key") in ["S-Print", "Shift-Print"]:
+                cmd = kb.find(".//command")
+                if cmd is not None and any(k in (cmd.text or "") for k in ["capturepi-menu", "screenshot-menu"]):
                     to_remove.append(kb)
         for r in to_remove:
             kb_elem.remove(r)
         if hasattr(ET, "indent"):
             ET.indent(root, space="    ")
         tree.write(rc_path, encoding="utf-8", xml_declaration=True)
-        print("Removed Print keybind from Labwc.")
+        print("Removed Print & Shift+Print keybinds from Labwc.")
 except Exception as e:
     pass
 PYEOF
@@ -49,4 +61,4 @@ PYEOF
     fi
 fi
 
-echo "Screenshot Tool uninstalled successfully."
+echo "CapturePi uninstalled successfully."

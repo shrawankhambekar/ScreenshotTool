@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Install Screenshot Tool
-Comment=One-click installer for Screenshot Tool
+Name=Install CapturePi
+Comment=One-click installer for CapturePi screen capture & recording suite
 Exec=bash -c 'cd "$(dirname "%k")" && ./install.sh; echo ""; read -p "Press Enter to finish..."'
 Icon=system-software-install
 Terminal=true

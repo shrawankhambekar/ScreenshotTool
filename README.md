@@ -1,75 +1,137 @@
-# Wayland Screenshot Tool
+<div align="center">
 
-An interactive, high-performance screen capture overlay and toolbar designed for Wayland compositors (Labwc on Raspberry Pi OS, Sway, Hyprland, etc.).
+<img src="assets/banner.png" alt="CapturePi Banner" width="100%" />
+
+# CapturePi
+
+**The ultimate lightweight, hardware-accelerated screen capture and recording suite for Raspberry Pi and Wayland Linux.**
+
+[![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi%20OS%20%7C%20Debian%20%7C%20Arch%20%7C%20Fedora-c51a4a.svg?logo=raspberrypi&logoColor=white)](https://github.com/shrawankhambekar/ScreenshotTool)
+[![Display Server](https://img.shields.io/badge/Wayland-Labwc%20%7C%20Sway%20%7C%20Hyprland-blue.svg?logo=wayland&logoColor=white)](https://github.com/shrawankhambekar/ScreenshotTool)
+[![Toolkit](https://img.shields.io/badge/GUI-GTK4%20Layer%20Shell%20%2B%20Cairo-ff69b4.svg?logo=gtk&logoColor=white)](https://github.com/shrawankhambekar/ScreenshotTool)
+[![Recorder](https://img.shields.io/badge/Engine-wf--recorder%20%2B%20grim-brightgreen.svg)](https://github.com/shrawankhambekar/ScreenshotTool)
+[![Audio](https://img.shields.io/badge/Audio-PipeWire%20%7C%20WirePlumber-orange.svg)](https://github.com/shrawankhambekar/ScreenshotTool)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+*A fast, modern alternative to bulky screenshot tools. Built with native GTK4 Layer Shell and Cairo for zero-lag screen cropping, 1-click full screen snapping, fluid dragging, and high-framerate MP4 video recording with dual audio (Mic + System Sound).*
 
 ---
 
-## ⚡ Quick Installation
+</div>
 
-### Method 1: Terminal (Recommended - Single Command)
-If you have the `ScreenshotTool.zip` archive, copy & paste this command:
-```bash
-unzip -o ScreenshotTool.zip && cd ScreenshotTool && ./install.sh
-```
+## 🌟 Why CapturePi?
 
-Or from inside the extracted folder:
+Most screenshot and screen recording tools for Linux are either built for legacy X11, heavy Electron wrappers that strain Raspberry Pi CPU/RAM, or lack proper Wayland desktop integration.
+
+**CapturePi** is engineered specifically for Wayland environments (standard on Raspberry Pi OS Bookworm & Labwc):
+- **Native Wayland Protocol**: Uses `gtk4-layer-shell` and `grim` for pixel-perfect captures without screen tearing.
+- **Micro-Footprint**: Fast launch, silky smooth Cairo rendering, and ultra-low memory consumption.
+- **Dual Audio Support**: Simultaneously records your microphone and desktop internal system sound (YouTube, video calls, media players).
+- **Windows-Style 1-Click Clipboard**: Everything you snap is instantly copied to the system clipboard—ready to paste (<kbd>Ctrl</kbd>+<kbd>V</kbd>) into Discord, Chromium, LibreOffice, or Telegram immediately.
+
+---
+
+## ✨ Key Features
+
+- 📸 **Selective & Fullscreen Snapshots**:
+  - **Rectangle**: Select mode, then click and drag across any region with real-time dimensions and translucent guidelines.
+  - **1-Click Full Screen**: Select mode, then click anywhere on screen to snap the entire display instantly.
+  - **Window Snapping**: Intelligently identifies and snaps to active window boundaries.
+- 🎙️ **Dual Audio Recording**:
+  - **`🎙 Mic`**: Record external USB / 3.5mm microphone audio input.
+  - **`🔊 Audio`**: Record internal system sound playback via PipeWire monitor loopback.
+  - **Live Mute Buttons**: Click the Mic or Audio buttons right in the floating bar to mute/unmute streams during recording!
+- 🎥 **Smooth Screen Recording (`wf-recorder`)**:
+  - Records directly to high-compatibility MP4 (`H.264 / AAC`).
+  - **Pause (`❚❚`) & Resume (`▶`)**: Pause recordings on the fly without splitting into multiple video files.
+  - **Cursor Capture**: Mouse movements rendered smoothly across all footage.
+- 🎛️ **Jitter-Free Draggable HUD**:
+  - Floating recording toolbar can be dragged anywhere on screen using the `⠿` grip handle.
+  - **Auto-Hiding Overlay**: When selecting a recording area, the toolbar automatically hides so it never ruins your selection.
+  - **Auto-Shrinking Minimalist Pill**: During full-screen recording, the toolbar shrinks to a compact, non-intrusive transparent pill (< 38% opacity) at the top of your screen.
+- ⚡ **Instant Hardware Keybinding**: Automatically configures the <kbd>Print Screen</kbd> key on Raspberry Pi OS (Labwc), Sway, and Hyprland.
+
+---
+
+## 🚀 Quick Installation
+
+### Method 1: Single-Command Quick Install (Recommended)
+
+Clone the repository and run the installer:
 ```bash
+git clone https://github.com/shrawankhambekar/ScreenshotTool.git CapturePi
+cd CapturePi
 ./install.sh
 ```
 
-### Method 2: One-Click GUI Install
-1. Open the extracted **`ScreenshotTool`** folder in your file manager.
-2. Double-click **`Install Screenshot Tool`** (`install.desktop`).
+Or from a downloaded release archive:
+```bash
+unzip -o CapturePi.zip && cd CapturePi && ./install.sh
+```
+
+### Method 2: One-Click GUI Desktop Install
+1. Open the **`CapturePi`** folder in the Raspberry Pi File Manager.
+2. Double-click **`Install CapturePi`** (`install.desktop`).
+3. Press <kbd>Enter</kbd> when finished.
 
 ---
 
-## 🎯 How to Use After Installing
+## 🎯 How to Use
 
 | Shortcut / Command | Action |
 | :--- | :--- |
-| <kbd>Print Screen</kbd> | **Interactive Overlay**: Drag to crop any area, snap to windows, or capture full screen. |
-| <kbd>Shift</kbd> + <kbd>Print Screen</kbd> | **Quick Toolbar Menu**: Horizontal menu with Rectangle, Full Screen, and Record options. |
-| `screenshot-tool` | Terminal command to launch the interactive GTK4 overlay. |
-| `screenshot-menu` | Terminal command to launch the Wofi toolbar menu. |
-| `screen-recorder` | Terminal command to directly launch the floating screen recording controller. |
+| <kbd>Print Screen</kbd> | **Interactive Overlay**: Launch CapturePi overlay bar to crop, snap fullscreen, or record. |
+| <kbd>Shift</kbd> + <kbd>Print Screen</kbd> | **Quick Toolbar Menu**: Horizontal launcher with Rectangle, Full Screen, and Record options. |
+| `capturepi` | Launch the interactive GTK4 overlay bar from terminal or app runner. |
+| `capturepi-recorder` | Launch the floating screen recorder controller directly. |
+| `capturepi-menu` | Launch the quick Wofi toolbar menu. |
 
-*Captured screenshots are automatically copied to your clipboard (`wl-copy`) ready to paste (<kbd>Ctrl</kbd>+<kbd>V</kbd>) anywhere. Screen recordings are saved to `~/Videos/Recordings/rec_*.mp4`.*
-
----
-
-## ✨ Features
-- **Instant Hardware Keybind**: Automatically binds <kbd>Print</kbd> and <kbd>Shift</kbd>+<kbd>Print</kbd>.
-- **High-Performance Screen Recording (`wf-recorder`)**:
-  - **Movable Floating Controller**: Draggable anywhere on the desktop via the grip handle `⠿`.
-  - **Start, Stop, Pause & Resume**: Click `❚❚` to pause without splitting files; click `▶` to resume; click `■` to finalize the MP4.
-  - **Live Duration Timer**: Precision digital timer (`MM:SS`) tracking elapsed recording time.
-  - **Clean Recording Guarantee**: When recording a region, the toolbar positions itself outside the capture geometry. When recording full-screen, click `▲` to collapse the controller into a minimal edge pill.
-  - **Pointer Capture**: The mouse cursor is rendered and tracked smoothly across the entire recording.
-- **Interactive Overlay (`screenshot-tool`)**:
-  - **Rectangle Drag**: Click and drag to crop any area with translucent guides and real-time pixel size indicator.
-  - **Window Snapping**: Automatically detects and highlights window boundaries.
-  - **Full Screen**: Instant one-click full monitor capture.
-  - **Direct Clipboard Integration**: Copies clean PNG directly into Wayland clipboard.
-- **Toolbar Menu Mode (`screenshot-menu`)**:
-  - Compact Wofi toolbar with Rectangle, Full Screen, and Record options that remembers your last-used selection mode.
-- **Robust Desktop Integration**:
-  - Preserves your system's default Labwc theme and desktop preferences so Raspberry Pi OS appearance settings will never erase your keybinds.
+> [!TIP]
+> **1-Click Paste**: Screenshots are automatically copied to your clipboard (`wl-copy`) and saved to `~/Pictures/Screenshots/`. Screen recordings are saved to `~/Videos/Recordings/rec_*.mp4`.
 
 ---
 
-## 📦 Supported Operating Systems & Dependencies
-The installer automatically detects your package manager and installs all necessary libraries:
-- **Debian / Ubuntu / Raspberry Pi OS**: `apt`
-- **Arch Linux / Manjaro**: `pacman`
-- **Fedora / RHEL**: `dnf`
-- **openSUSE**: `zypper`
+## 🔊 Audio Recording Guide
 
-**Packages installed**: `grim`, `slurp`, `wl-clipboard`, `wofi`, `libgtk4-layer-shell`, `python3-gi`, `python3-cairo`.
+CapturePi features intelligent PipeWire/WirePlumber integration for audio capture:
+
+| Toggle Button | What It Records | Backend Source |
+| :--- | :--- | :--- |
+| **`🎙 Mic: ON`** | External microphone, headset, or USB mic | `@DEFAULT_AUDIO_SOURCE@` |
+| **`🔊 Audio: ON`** | System sound, YouTube, browser playback, games | `@DEFAULT_AUDIO_SINK@.monitor` |
+
+- In the overlay toolbar, click **● Record** to reveal the `[🎙 Mic]` and `[🔊 Audio]` toggle pills.
+- During active recording, click the green audio buttons on the floating HUD to mute or unmute on the fly!
+
+---
+
+## 📦 Compatibility & Dependencies
+
+CapturePi works out-of-the-box on:
+- **Raspberry Pi OS** (Bookworm / Wayland / Labwc) — Pi 3B+, Pi 4, Pi 400, Pi 5, Pi 500
+- **Debian / Ubuntu** (Wayland session)
+- **Arch Linux / Manjaro**
+- **Fedora / openSUSE**
+
+The installer verifies and automatically installs:
+- `grim` (Wayland image grabber)
+- `slurp` (Wayland region selector)
+- `wl-clipboard` (Wayland clipboard manager)
+- `wf-recorder` (Wayland screen recorder)
+- `wofi` (Application menu / quick launcher)
+- `python3-gi`, `gir1.2-gtk-4.0`, `gir1.2-gtk4layershell-1.0`, `python3-cairo`
 
 ---
 
 ## 🗑️ Uninstallation
-To cleanly remove all commands, desktop shortcuts, and keybindings:
+
+To cleanly remove all shortcuts, desktop icons, and keybindings:
 ```bash
 ./uninstall.sh
 ```
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).

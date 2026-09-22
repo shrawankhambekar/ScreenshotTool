@@ -1,41 +1,52 @@
 ============================================================
-              WAYLAND SCREENSHOT TOOL - INSTALLATION
+              CAPTUREPI - INSTALLATION GUIDE
 ============================================================
 
 >>> QUICK 1-STEP INSTALL (COPY & PASTE THIS COMMAND):
 ------------------------------------------------------------
-unzip -o ScreenshotTool.zip && cd ScreenshotTool && ./install.sh
+git clone https://github.com/shrawankhambekar/ScreenshotTool.git CapturePi && cd CapturePi && ./install.sh
 ------------------------------------------------------------
 
-Or if already unzipped inside this folder:
+Or if using a downloaded ZIP archive:
+------------------------------------------------------------
+unzip -o CapturePi.zip && cd CapturePi && ./install.sh
+------------------------------------------------------------
+
+Or if already inside this folder:
 ------------------------------------------------------------
 ./install.sh
 ------------------------------------------------------------
 
 >>> OR ONE-CLICK GUI INSTALL:
-Double-click "Install Screenshot Tool" (install.desktop) inside
+Double-click "Install CapturePi" (install.desktop) inside
 your file manager.
 
 
 >>> WHAT THE INSTALLER AUTOMATICALLY SETS UP:
 1. Installs required system packages via apt, pacman, dnf, or zypper:
-   - grim, slurp, wl-clipboard, wofi
+   - grim, slurp, wl-clipboard, wf-recorder, wofi
    - GTK4 Layer Shell & Cairo Python bindings
 2. Sets execution permissions on all scripts.
-3. Creates system commands:
-   - 'screenshot-tool' (interactive GTK4 overlay)
-   - 'screenshot-menu' (Wofi toolbar menu)
-4. Configures hardware keyboard shortcuts:
-   - [Print Screen]       -> Interactive Screenshot Overlay
-   - [Shift+Print Screen] -> Quick Toolbar Menu
+3. Installs app icon and desktop menu shortcut:
+   - CapturePi in Application Menu under Graphics & Utilities
+4. Creates system CLI commands:
+   - 'capturepi' (interactive GTK4 overlay)
+   - 'capturepi-recorder' (floating screen recording controller)
+   - 'capturepi-menu' (quick toolbar menu)
+5. Configures hardware keyboard shortcuts:
+   - [Print Screen]       -> CapturePi Interactive Overlay
+   - [Shift+Print Screen] -> CapturePi Quick Menu
 
 
 >>> HOW TO USE AFTER INSTALLING:
 - Simply press [Print Screen] on your keyboard.
 - Or press [Shift] + [Print Screen] for the toolbar menu.
-- Or run 'screenshot-tool' from any terminal.
+- Or run 'capturepi' from any terminal.
+- Or launch CapturePi from your desktop applications menu.
+
 Captured images are instantly copied to your clipboard ready
-to paste (Ctrl+V) into chat, documents, or image editors!
+to paste (Ctrl+V) into Discord, browser, or documents!
+Screen recordings are saved to ~/Videos/Recordings/rec_*.mp4.
 
 
 >>> TO UNINSTALL:

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=CapturePi
+GenericName=Screen Capture & Recording Tool
+Comment=Interactive Wayland screenshot overlay and screen recorder with dual audio
+Exec=capturepi
+Icon=capturepi
+Terminal=false
+Categories=Graphics;Utility;AudioVideo;
+Keywords=screenshot;screen;capture;record;video;wayland;grim;wf-recorder;audio;
+StartupNotify=false

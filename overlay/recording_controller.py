@@ -17,6 +17,7 @@ import signal
 import subprocess
 import shutil
 import argparse
+import re
 from typing import Optional
 
 import gi
@@ -27,11 +28,16 @@ from gi.repository import Gtk, Gdk, GLib, Gtk4LayerShell
 
 
 class RecordingController(Gtk.Application):
-    def __init__(self, geometry: Optional[str] = None, output_dir: Optional[str] = None):
-        super().__init__(application_id="com.shrawan.ScreenRecorder")
+    def __init__(self, geometry: Optional[str] = None, output_dir: Optional[str] = None, mic: bool = False, audio: bool = False):
+        super().__init__(application_id="com.shrawan.CapturePiRecorder")
         self.geometry = geometry
         self.output_dir = output_dir or os.path.expanduser("~/Videos/Recordings")
         os.makedirs(self.output_dir, exist_ok=True)
+
+        self.mic_enabled = mic
+        self.audio_enabled = audio
+        self.mic_muted = False
+        self.audio_muted = False
 
         self.window = None
         self.proc: Optional[subprocess.Popen] = None
@@ -131,6 +137,24 @@ class RecordingController(Gtk.Application):
         self.timer_label = Gtk.Label(label="00:00")
         self.timer_label.add_css_class("timer-label")
         self.main_box.append(self.timer_label)
+        self.main_box.append(make_sep())
+
+        # Audio status / mute toggles
+        self.mic_button = Gtk.Button(label="🎙 Mic")
+        self.mic_button.add_css_class("flat-btn")
+        self.mic_button.add_css_class("btn-audio-pill")
+        self.mic_button.set_tooltip_text("External Microphone (Click to mute/unmute)")
+        self.mic_button.connect("clicked", self.toggle_mic)
+        self.main_box.append(self.mic_button)
+
+        self.audio_button = Gtk.Button(label="🔊 Audio")
+        self.audio_button.add_css_class("flat-btn")
+        self.audio_button.add_css_class("btn-audio-pill")
+        self.audio_button.set_tooltip_text("Internal System Audio Playback (Click to mute/unmute)")
+        self.audio_button.connect("clicked", self.toggle_sys_audio)
+        self.main_box.append(self.audio_button)
+
+        self.update_audio_buttons()
 
         self.main_box.append(make_sep())
 
@@ -310,6 +334,72 @@ class RecordingController(Gtk.Application):
         # Default full-screen placement: top panel bar (y=2) where it does not cover windows
         return 320, 2
 
+    def get_sink_monitor(self) -> Optional[str]:
+        try:
+            out = subprocess.check_output(["wpctl", "inspect", "@DEFAULT_AUDIO_SINK@"], text=True)
+            m = re.search(r'node\.name\s*=\s*\"([^\"]+)\"', out)
+            if m:
+                return m.group(1) + ".monitor"
+        except Exception:
+            pass
+        return None
+
+    def toggle_mic(self, button=None):
+        self.reset_interaction_timer()
+        self.mic_muted = not self.mic_muted
+        try:
+            val = 1 if self.mic_muted else 0
+            subprocess.run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", str(val)], check=False)
+        except Exception:
+            pass
+        self.update_audio_buttons()
+
+    def toggle_sys_audio(self, button=None):
+        self.reset_interaction_timer()
+        self.audio_muted = not self.audio_muted
+        try:
+            val = 1 if self.audio_muted else 0
+            subprocess.run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", str(val)], check=False)
+        except Exception:
+            pass
+        self.update_audio_buttons()
+
+    def update_audio_buttons(self):
+        if not getattr(self, "mic_button", None) or not getattr(self, "audio_button", None):
+            return
+
+        if not self.mic_enabled:
+            self.mic_button.set_label("🎙 Off")
+            self.mic_button.remove_css_class("btn-audio-active")
+            self.mic_button.remove_css_class("btn-audio-muted")
+            self.mic_button.add_css_class("btn-audio-off")
+        elif self.mic_muted:
+            self.mic_button.set_label("🎙✕")
+            self.mic_button.remove_css_class("btn-audio-active")
+            self.mic_button.remove_css_class("btn-audio-off")
+            self.mic_button.add_css_class("btn-audio-muted")
+        else:
+            self.mic_button.set_label("🎙 Mic")
+            self.mic_button.remove_css_class("btn-audio-off")
+            self.mic_button.remove_css_class("btn-audio-muted")
+            self.mic_button.add_css_class("btn-audio-active")
+
+        if not self.audio_enabled:
+            self.audio_button.set_label("🔊 Off")
+            self.audio_button.remove_css_class("btn-audio-active")
+            self.audio_button.remove_css_class("btn-audio-muted")
+            self.audio_button.add_css_class("btn-audio-off")
+        elif self.audio_muted:
+            self.audio_button.set_label("🔊✕")
+            self.audio_button.remove_css_class("btn-audio-active")
+            self.audio_button.remove_css_class("btn-audio-off")
+            self.audio_button.add_css_class("btn-audio-muted")
+        else:
+            self.audio_button.set_label("🔊 Audio")
+            self.audio_button.remove_css_class("btn-audio-off")
+            self.audio_button.remove_css_class("btn-audio-muted")
+            self.audio_button.add_css_class("btn-audio-active")
+
     def start_recording_process(self):
         ts = time.strftime("%Y%m%d_%H%M%S")
         self.output_file = os.path.join(self.output_dir, f"rec_{ts}.mp4")
@@ -318,7 +408,16 @@ class RecordingController(Gtk.Application):
         if self.geometry:
             cmd.extend(["-g", self.geometry])
 
-        print(f"[RECORDER] Spawning: {' '.join(cmd)}")
+        if self.audio_enabled:
+            sink_mon = self.get_sink_monitor()
+            if sink_mon:
+                cmd.extend(["-a", sink_mon])
+            else:
+                cmd.append("-a")
+        elif self.mic_enabled:
+            cmd.append("-a")
+
+        print(f"[CAPTUREPI] Spawning: {' '.join(cmd)}")
         self.proc = subprocess.Popen(cmd)
         now = time.time()
         self.start_time = now
@@ -669,6 +768,42 @@ class RecordingController(Gtk.Application):
             color: #ff453a;
             background-color: rgba(255, 60, 60, 0.15);
         }
+
+        /* Audio Pill Styles */
+        .btn-audio-pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+        }
+
+        .btn-audio-active {
+            color: #38ef7d;
+            background-color: rgba(56, 239, 125, 0.18);
+        }
+
+        .btn-audio-active:hover {
+            color: #ffffff;
+            background-color: rgba(56, 239, 125, 0.30);
+        }
+
+        .btn-audio-muted {
+            color: #ff9500;
+            background-color: rgba(255, 149, 0, 0.18);
+        }
+
+        .btn-audio-muted:hover {
+            color: #ffffff;
+            background-color: rgba(255, 149, 0, 0.30);
+        }
+
+        .btn-audio-off {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-audio-off:hover {
+            color: rgba(255, 255, 255, 0.65);
+        }
         """)
 
         display = Gdk.Display.get_default()
@@ -681,12 +816,14 @@ class RecordingController(Gtk.Application):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Floating Wayland Screen Recording Controller")
+    parser = argparse.ArgumentParser(description="CapturePi Floating Wayland Screen Recording Controller")
     parser.add_argument("-g", "--geometry", type=str, default=None, help="Target screen geometry: 'X,Y WxH'")
     parser.add_argument("-o", "--output-dir", type=str, default=None, help="Output directory for recordings")
+    parser.add_argument("--mic", action="store_true", help="Record external microphone input")
+    parser.add_argument("--audio", action="store_true", help="Record internal system audio playback")
     args = parser.parse_args()
 
-    app = RecordingController(geometry=args.geometry, output_dir=args.output_dir)
+    app = RecordingController(geometry=args.geometry, output_dir=args.output_dir, mic=args.mic, audio=args.audio)
     app.run([])
 
 

@@ -2,7 +2,7 @@
 set -e
 
 # ==============================================================================
-# Screenshot Tool Installer
+# CapturePi Installer
 # Works on Debian/Ubuntu/Raspberry Pi OS, Arch, Fedora, and openSUSE
 # ==============================================================================
 
@@ -11,11 +11,13 @@ REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 REAL_HOME="${REAL_HOME:-$HOME}"
 
 INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
-export OVERLAY_LAUNCHER="$INSTALL_DIR/scripts/screenshot-overlay"
-export MENU_LAUNCHER="$INSTALL_DIR/scripts/screenshot-menu"
+export OVERLAY_LAUNCHER="$INSTALL_DIR/scripts/capturepi"
+export MENU_LAUNCHER="$INSTALL_DIR/scripts/capturepi-menu"
+export RECORDER_LAUNCHER="$INSTALL_DIR/scripts/capturepi-recorder"
 
 echo "=========================================="
-echo "    Installing Wayland Screenshot Tool    "
+echo "          Installing CapturePi            "
+echo "  Raspberry Pi & Wayland Screen Recorder  "
 echo "=========================================="
 echo "Directory:   $INSTALL_DIR"
 echo "Target User: $REAL_USER ($REAL_HOME)"
@@ -69,6 +71,7 @@ else
             grim \
             slurp \
             wl-clipboard \
+            wf-recorder \
             wofi \
             python-gobject \
             gtk4-layer-shell \
@@ -78,6 +81,7 @@ else
             grim \
             slurp \
             wl-clipboard \
+            wf-recorder \
             wofi \
             python3-gobject \
             gtk4-layer-shell \
@@ -87,12 +91,13 @@ else
             grim \
             slurp \
             wl-clipboard \
+            wf-recorder \
             wofi \
             python3-gobject \
             gtk4-layer-shell \
             python3-cairo
     else
-        echo "Notice: Package manager not recognized. Please ensure grim, slurp, wl-clipboard, wofi, and libgtk4-layer-shell are installed."
+        echo "Notice: Package manager not recognized. Please ensure grim, slurp, wl-clipboard, wf-recorder, wofi, and libgtk4-layer-shell are installed."
     fi
 fi
 
@@ -102,30 +107,64 @@ chmod +x "$INSTALL_DIR"/scripts/* 2>/dev/null || true
 chmod +x "$INSTALL_DIR"/overlay/*.py 2>/dev/null || true
 chmod +x "$INSTALL_DIR"/*.sh 2>/dev/null || true
 
-# 3. Create CLI symlinks and Desktop shortcut
-echo "[3/4] Setting up launcher shortcuts..."
+# 3. Create CLI symlinks, Icons, and Desktop shortcuts
+echo "[3/4] Setting up launcher shortcuts & icon..."
 BIN_DIR="$REAL_HOME/.local/bin"
 mkdir -p "$BIN_DIR"
-ln -sf "$OVERLAY_LAUNCHER" "$BIN_DIR/screenshot-tool"
-ln -sf "$MENU_LAUNCHER" "$BIN_DIR/screenshot-menu"
-ln -sf "$INSTALL_DIR/scripts/screen-recorder" "$BIN_DIR/screen-recorder"
-chown -h "$REAL_USER":"$REAL_USER" "$BIN_DIR/screenshot-tool" "$BIN_DIR/screenshot-menu" "$BIN_DIR/screen-recorder" 2>/dev/null || true
-echo "  -> Created ~/.local/bin/screenshot-tool, screenshot-menu, and screen-recorder"
 
+# Install CapturePi primary commands
+ln -sf "$INSTALL_DIR/scripts/capturepi" "$BIN_DIR/capturepi"
+ln -sf "$INSTALL_DIR/scripts/capturepi-menu" "$BIN_DIR/capturepi-menu"
+ln -sf "$INSTALL_DIR/scripts/capturepi-recorder" "$BIN_DIR/capturepi-recorder"
+
+# Install backward-compatibility aliases
+ln -sf "$INSTALL_DIR/scripts/screenshot-overlay" "$BIN_DIR/screenshot-tool"
+ln -sf "$INSTALL_DIR/scripts/screenshot-menu" "$BIN_DIR/screenshot-menu"
+ln -sf "$INSTALL_DIR/scripts/screen-recorder" "$BIN_DIR/screen-recorder"
+
+chown -h "$REAL_USER":"$REAL_USER" "$BIN_DIR/capturepi" "$BIN_DIR/capturepi-menu" "$BIN_DIR/capturepi-recorder" \
+    "$BIN_DIR/screenshot-tool" "$BIN_DIR/screenshot-menu" "$BIN_DIR/screen-recorder" 2>/dev/null || true
+echo "  -> Created ~/.local/bin/capturepi, capturepi-menu, and capturepi-recorder"
+
+# Install Icon
+ICON_DIR="$REAL_HOME/.local/share/icons/hicolor/256x256/apps"
+mkdir -p "$ICON_DIR"
+if [ -f "$INSTALL_DIR/assets/icon.png" ]; then
+    cp "$INSTALL_DIR/assets/icon.png" "$ICON_DIR/capturepi.png"
+    chown "$REAL_USER":"$REAL_USER" "$ICON_DIR/capturepi.png" 2>/dev/null || true
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -f -t "$REAL_HOME/.local/share/icons/hicolor" 2>/dev/null || true
+    fi
+    echo "  -> Installed CapturePi icon to ~/.local/share/icons/hicolor/256x256/apps/capturepi.png"
+fi
+
+# Install Desktop Entry
 APP_DIR="$REAL_HOME/.local/share/applications"
 mkdir -p "$APP_DIR"
-cat << DESKTOPEOF > "$APP_DIR/screenshot-tool.desktop"
+if [ -f "$INSTALL_DIR/CapturePi.desktop" ]; then
+    cp "$INSTALL_DIR/CapturePi.desktop" "$APP_DIR/CapturePi.desktop"
+    sed -i "s|^Exec=.*|Exec=$OVERLAY_LAUNCHER|g" "$APP_DIR/CapturePi.desktop"
+else
+    cat << DESKTOPEOF > "$APP_DIR/CapturePi.desktop"
 [Desktop Entry]
 Type=Application
-Name=Screenshot Tool
-Comment=Interactive Wayland screenshot overlay and menu
+Name=CapturePi
+GenericName=Screen Capture & Recording Tool
+Comment=Interactive Wayland screenshot overlay and screen recorder with dual audio
 Exec=$OVERLAY_LAUNCHER
-Icon=accessories-screenshot
+Icon=capturepi
 Terminal=false
-Categories=Utility;Graphics;
+Categories=Graphics;Utility;AudioVideo;
+Keywords=screenshot;screen;capture;record;video;wayland;grim;wf-recorder;audio;
 DESKTOPEOF
-chown "$REAL_USER":"$REAL_USER" "$APP_DIR/screenshot-tool.desktop" 2>/dev/null || true
-echo "  -> Created desktop entry in ~/.local/share/applications/screenshot-tool.desktop"
+fi
+
+# Backward-compatibility desktop link
+ln -sf "$APP_DIR/CapturePi.desktop" "$APP_DIR/screenshot-tool.desktop"
+
+chown "$REAL_USER":"$REAL_USER" "$APP_DIR/CapturePi.desktop" 2>/dev/null || true
+chown -h "$REAL_USER":"$REAL_USER" "$APP_DIR/screenshot-tool.desktop" 2>/dev/null || true
+echo "  -> Created desktop entry in ~/.local/share/applications/CapturePi.desktop"
 
 # 4. Configure Print Screen keybinding
 echo "[4/4] Configuring Print Screen keybind..."
@@ -180,10 +219,14 @@ if kb_elem is None:
 found = False
 for kb in kb_elem.findall(f"{ns}keybind") + kb_elem.findall("keybind"):
     if kb.get("key") == "Print":
-        action = kb.find(f"{ns}action") or kb.find("action")
+        action = kb.find(f"{ns}action")
+        if action is None:
+            action = kb.find("action")
         if action is None:
             action = ET.SubElement(kb, f"{ns}action", {"name": "Execute"})
-        cmd = action.find(f"{ns}command") or action.find("command")
+        cmd = action.find(f"{ns}command")
+        if cmd is None:
+            cmd = action.find("command")
         if cmd is None:
             cmd = ET.SubElement(action, f"{ns}command")
         cmd.text = launcher
@@ -201,6 +244,17 @@ if menu_launcher:
     found_menu = False
     for kb in kb_elem.findall(f"{ns}keybind") + kb_elem.findall("keybind"):
         if kb.get("key") in ["S-Print", "Shift-Print"]:
+            action = kb.find(f"{ns}action")
+            if action is None:
+                action = kb.find("action")
+            if action is None:
+                action = ET.SubElement(kb, f"{ns}action", {"name": "Execute"})
+            cmd = action.find(f"{ns}command")
+            if cmd is None:
+                cmd = action.find("command")
+            if cmd is None:
+                cmd = ET.SubElement(action, f"{ns}command")
+            cmd.text = menu_launcher
             found_menu = True
             break
     if not found_menu:
@@ -231,9 +285,9 @@ fi
 # 4B. Sway
 SWAY_CONFIG="$REAL_HOME/.config/sway/config"
 if [ -f "$SWAY_CONFIG" ]; then
-    if ! grep -q "screenshot-overlay" "$SWAY_CONFIG"; then
+    if ! grep -q "capturepi" "$SWAY_CONFIG"; then
         echo "" >> "$SWAY_CONFIG"
-        echo "# Screenshot Tool" >> "$SWAY_CONFIG"
+        echo "# CapturePi" >> "$SWAY_CONFIG"
         echo "bindsym Print exec $OVERLAY_LAUNCHER" >> "$SWAY_CONFIG"
         echo "  -> Added Print keybind to Sway config ($SWAY_CONFIG)"
     fi
@@ -242,9 +296,9 @@ fi
 # 4C. Hyprland
 HYPR_CONFIG="$REAL_HOME/.config/hypr/hyprland.conf"
 if [ -f "$HYPR_CONFIG" ]; then
-    if ! grep -q "screenshot-overlay" "$HYPR_CONFIG"; then
+    if ! grep -q "capturepi" "$HYPR_CONFIG"; then
         echo "" >> "$HYPR_CONFIG"
-        echo "# Screenshot Tool" >> "$HYPR_CONFIG"
+        echo "# CapturePi" >> "$HYPR_CONFIG"
         echo "bind = , Print, exec, $OVERLAY_LAUNCHER" >> "$HYPR_CONFIG"
         echo "  -> Added Print keybind to Hyprland config ($HYPR_CONFIG)"
     fi
@@ -252,10 +306,11 @@ fi
 
 echo ""
 echo "=========================================="
-echo "         Installation Complete!           "
+echo "     CapturePi Installation Complete!     "
 echo "=========================================="
 echo "You can now:"
 echo "  1. Press 'Print Screen' on your keyboard"
-echo "  2. Or run 'screenshot-tool' from anywhere"
-echo "  3. Or run 'screenshot-menu' for the toolbar menu"
+echo "  2. Or run 'capturepi' from anywhere"
+echo "  3. Or run 'capturepi-menu' for the quick toolbar menu"
+echo "  4. Or run 'capturepi-recorder' to open the recording controller"
 echo "=========================================="

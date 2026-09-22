@@ -19,6 +19,7 @@ from gi.repository import Gtk, Gdk, GLib, Gtk4LayerShell
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
 STATE_FILE = os.path.join(PROJECT_DIR, ".last_mode")
+AUDIO_STATE_FILE = os.path.join(PROJECT_DIR, ".audio_state")
 
 DEFAULT_MODE = "Record"
 
@@ -26,9 +27,10 @@ DEFAULT_MODE = "Record"
 class ScreenshotOverlay(Gtk.Application):
 
     def __init__(self):
-        super().__init__(application_id="com.shrawan.ScreenshotTool")
+        super().__init__(application_id="com.shrawan.CapturePi")
 
         self.mode = self.load_mode()
+        self.mic_enabled, self.audio_enabled = self.load_audio_state()
 
         self.window = None
         self.overlay = None
@@ -67,6 +69,32 @@ class ScreenshotOverlay(Gtk.Application):
 
         with open(STATE_FILE, "w") as f:
             f.write(self.mode)
+
+    def load_audio_state(self):
+        # Default: System audio ON, Mic OFF
+        mic = False
+        audio = True
+        try:
+            if os.path.exists(AUDIO_STATE_FILE):
+                with open(AUDIO_STATE_FILE, "r") as f:
+                    content = f.read().strip().split(",")
+                    mic = "mic" in content
+                    audio = "audio" in content
+        except Exception:
+            pass
+        return mic, audio
+
+    def save_audio_state(self):
+        try:
+            items = []
+            if self.mic_enabled:
+                items.append("mic")
+            if self.audio_enabled:
+                items.append("audio")
+            with open(AUDIO_STATE_FILE, "w") as f:
+                f.write(",".join(items))
+        except Exception:
+            pass
 
     # --------------------------------------------------
     # Application
@@ -260,6 +288,17 @@ class ScreenshotOverlay(Gtk.Application):
         self.record_btn.set_tooltip_text("Record full screen or drag to select area")
         self.record_btn.connect("clicked", self.select_record)
 
+        # Audio Toggles (for Record Mode)
+        self.mic_toggle = Gtk.Button(label="🎙 Mic: OFF")
+        self.mic_toggle.add_css_class("btn-audio-toggle")
+        self.mic_toggle.set_tooltip_text("Toggle External Microphone recording")
+        self.mic_toggle.connect("clicked", self.toggle_mic)
+
+        self.audio_toggle = Gtk.Button(label="🔊 Audio: ON")
+        self.audio_toggle.add_css_class("btn-audio-toggle")
+        self.audio_toggle.set_tooltip_text("Toggle Internal System Audio playback recording")
+        self.audio_toggle.connect("clicked", self.toggle_audio)
+
         # 5. Close Button
         self.close_btn = Gtk.Button(label="✕")
         self.close_btn.set_tooltip_text("Cancel overlay (Esc)")
@@ -269,6 +308,8 @@ class ScreenshotOverlay(Gtk.Application):
         self.toolbar.append(self.fullscreen_btn)
         self.toolbar.append(self.window_btn)
         self.toolbar.append(self.record_btn)
+        self.toolbar.append(self.mic_toggle)
+        self.toolbar.append(self.audio_toggle)
         self.toolbar.append(self.close_btn)
 
         self.top_container.append(self.toolbar)
@@ -292,16 +333,49 @@ class ScreenshotOverlay(Gtk.Application):
 
         if self.mode == "Rectangle":
             self.rect_btn.add_css_class("selected")
+            self.mic_toggle.set_visible(False)
+            self.audio_toggle.set_visible(False)
             self.record_hint.set_text("Drag to select area for cropped screenshot  •  Esc to cancel")
         elif self.mode == "Full Screen":
             self.fullscreen_btn.add_css_class("selected")
+            self.mic_toggle.set_visible(False)
+            self.audio_toggle.set_visible(False)
             self.record_hint.set_text("Click anywhere on screen to capture full screen  •  Esc to cancel")
         elif self.mode == "Window":
             self.window_btn.add_css_class("selected")
+            self.mic_toggle.set_visible(False)
+            self.audio_toggle.set_visible(False)
             self.record_hint.set_text("Click any window to capture  •  Esc to cancel")
         elif self.mode == "Record":
             self.record_btn.add_css_class("selected-red")
+            self.mic_toggle.set_visible(True)
+            self.audio_toggle.set_visible(True)
+
+            if self.mic_enabled:
+                self.mic_toggle.set_label("🎙 Mic: ON")
+                self.mic_toggle.add_css_class("audio-active")
+            else:
+                self.mic_toggle.set_label("🎙 Mic: OFF")
+                self.mic_toggle.remove_css_class("audio-active")
+
+            if self.audio_enabled:
+                self.audio_toggle.set_label("🔊 Audio: ON")
+                self.audio_toggle.add_css_class("audio-active")
+            else:
+                self.audio_toggle.set_label("🔊 Audio: OFF")
+                self.audio_toggle.remove_css_class("audio-active")
+
             self.record_hint.set_text("Click anywhere for full screen  •  Or drag to select area to record")
+
+    def toggle_mic(self, button):
+        self.mic_enabled = not self.mic_enabled
+        self.save_audio_state()
+        self.update_buttons()
+
+    def toggle_audio(self, button):
+        self.audio_enabled = not self.audio_enabled
+        self.save_audio_state()
+        self.update_buttons()
 
     # --------------------------------------------------
     # Mode selection
@@ -735,10 +809,17 @@ class ScreenshotOverlay(Gtk.Application):
         if self.window:
             self.window.hide()
 
-        recorder_script = os.path.join(PROJECT_DIR, "scripts", "screen-recorder")
+        recorder_script = os.path.join(PROJECT_DIR, "scripts", "capturepi-recorder")
+        if not os.path.exists(recorder_script):
+            recorder_script = os.path.join(PROJECT_DIR, "scripts", "screen-recorder")
+
         cmd = [recorder_script]
         if geometry:
             cmd.extend(["-g", geometry])
+        if self.mic_enabled:
+            cmd.append("--mic")
+        if self.audio_enabled:
+            cmd.append("--audio")
 
         def _do_launch():
             subprocess.Popen(cmd)
@@ -838,6 +919,28 @@ class ScreenshotOverlay(Gtk.Application):
                 font-size: 13px;
                 font-weight: 600;
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+            }
+
+            .btn-audio-toggle {
+                color: #a0aec0;
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 9px;
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 600;
+                transition: all 0.15s ease;
+            }
+
+            .btn-audio-toggle:hover {
+                background: rgba(255, 255, 255, 0.14);
+                color: #ffffff;
+            }
+
+            .audio-active {
+                color: #38ef7d;
+                background: rgba(56, 239, 125, 0.18);
+                border-color: rgba(56, 239, 125, 0.60);
             }
             """
         )
